@@ -1,0 +1,14 @@
+{
+    "name": "epickris/logger",
+    "autoload": {
+        "psr-4": {
+            "EpicKris\\": "src"
+        }
+    },
+    "require": {
+        "psr/log": "^1"
+    },
+    "suggest": {
+        "aws/aws-sdk-php": "Allows logging to Amazon CloudWatch."
+    }
+}
