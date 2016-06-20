@@ -34,11 +34,19 @@ class FileLogger extends AbstractLogger
     /**
      * File logger constructor.
      *
-     * @param string $path      Path.
-     * @param string $extension Extension.
+     * @param string $path        Path.
+     * @param string $extension   Extension.
+     * @param int    $permissions Permissions octal.
+     *
+     * @throws \InvalidArgumentException If $path, or $extension parameters are not strings, or $permissions is not an
+     *                                   octal.
      */
-    public function __construct($path = '', $extension = 'log')
+    public function __construct($path = '', $extension = 'log', $permissions = 0644)
     {
+        if (! is_string($path)) {
+            throw new \InvalidArgumentException('Path argument must be a string.');
+        }
+
         $this->setPath($path);
         $this->setExtension($extension);
     }
@@ -47,33 +55,47 @@ class FileLogger extends AbstractLogger
      * Set path.
      *
      * @param string $path Path.
+     *
+     * @return bool                      Returns true if successful, else false.
+     * @throws \InvalidArgumentException If $path parameter is not a string.
      */
     public function setPath($path)
     {
         if (! is_string($path)) {
-            throw new \InvalidArgumentException('Path must be a string.');
+            throw new \InvalidArgumentException('Path argument must be a string.');
         }
 
         $path = trim($path);
 
+        if (! is_dir($path) || ! $this->isReallyWritable($path)) {
+            return false;
+        }
+
         $this->path = $path;
+
+        return true;
     }
 
     /**
      * Set extension.
      *
      * @param string $extension Extension.
+     *
+     * @return bool                      Returns true if successful.
+     * @throws \InvalidArgumentException If $extension parameter is not a string.
      */
     public function setExtension($extension)
     {
         if (! is_string($extension)) {
-            throw new \InvalidArgumentException('Extension must be a string.');
+            throw new \InvalidArgumentException('Extension argument must be a string.');
         }
 
         $extension = trim($extension);
         $extension = ltrim($extension);
 
         $this->extension = $extension;
+
+        return true;
     }
 
     /**
@@ -91,10 +113,6 @@ class FileLogger extends AbstractLogger
             mkdir($this->path, 0755, true);
         }
 
-        if (! is_dir($this->path) || ! $this->isReallyWritable($this->path)) {
-            return;
-        }
-
         // TODO: Continue to implement log() method.
     }
 
@@ -103,12 +121,13 @@ class FileLogger extends AbstractLogger
      *
      * @param string $file File.
      *
-     * @return bool Returns true if file is writable, else false.
+     * @return bool                      Returns true if file is writable, else false.
+     * @throws \InvalidArgumentException If $file parameter is not a string.
      */
     protected function isReallyWritable($file)
     {
         if (! is_string($file)) {
-            throw new \InvalidArgumentException('File must be a string.');
+            throw new \InvalidArgumentException('File argument must be a string.');
         }
 
         if (DIRECTORY_SEPARATOR === '/' && ($this->isPhp('5.4') || ! ini_get('safe_mode'))) {
@@ -140,12 +159,13 @@ class FileLogger extends AbstractLogger
      *
      * @param string $version Version.
      *
-     * @return bool Returns true if the current version is $version or higher.
+     * @return bool                      Returns true if the current version is $version or higher.
+     * @throws \InvalidArgumentException If $version parameter is not a string.
      */
     protected function isPhp($version)
     {
         if (! is_string($version)) {
-            throw new \InvalidArgumentException('Version must be a string.');
+            throw new \InvalidArgumentException('Version argument must be a string.');
         }
 
         if (! isset($this->isPhp[$version])) {
